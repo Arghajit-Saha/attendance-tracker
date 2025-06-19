@@ -118,3 +118,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+:root {
+  --color-primary: #f9f4eb;
+  /*--color-secondary: #;*/
+}

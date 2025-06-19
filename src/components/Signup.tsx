@@ -1,21 +1,30 @@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import {type ChangeEvent, React, useState} from "react";
+import { type ChangeEvent, useState } from "react"
 import { supabase } from "@/supabase-client.ts"
-import {BackgroundBeams} from "@/components/ui/background-beams.tsx";
+import { BackgroundBeams } from "@/components/ui/background-beams.tsx"
 
-function Login() {
+function Signup() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [errorMsg, setErrorMsg] = useState("")
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const {error: signInError} = await supabase.auth.signInWithPassword({email, password})
-    if(signInError) {
-      console.log("Error Signing In : ", signInError.message)
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+
+    if (signUpError) {
+      console.log("Error Signing Up: ", signUpError.message)
+      setErrorMsg(signUpError.message)
       return
     }
+
+    setErrorMsg("")
+    alert("Check your email to confirm your account!")
   }
 
   return (
@@ -33,11 +42,19 @@ function Login() {
       </div>
       <div className="flex flex-col gap-3.5 sm:w-1/2">
         <div className="flex flex-col items-center justify-center gap-3.5 h-full w-full">
-          <h1 className="text-3xl font-bold mb-2.5">Login</h1>
-          <form className="flex flex-col items-center justify-center gap-3.5 mt-3" onSubmit={ handleSubmit }>
-            <Input type="email" placeholder="Email" onChange={(e : ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}/>
-            <Input type="password" placeholder="Password" onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}/>
-            <Button type="submit">Login</Button>
+          <h1 className="text-3xl font-bold mb-2.5">Sign Up</h1>
+          <form className="flex flex-col items-center justify-center gap-3.5 mt-3" onSubmit={handleSubmit}>
+            <Input
+              type="email"
+              placeholder="Email"
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+            />
+            <Button type="submit">Create Account</Button>
           </form>
         </div>
       </div>
@@ -45,4 +62,4 @@ function Login() {
   )
 }
 
-export default Login
+export default Signup
