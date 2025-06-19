@@ -16,6 +16,8 @@ function Login() {
       console.log("Error Signing In : ", signInError.message)
       return
     }
+    else
+      console.log("Success")
   }
 
   return (

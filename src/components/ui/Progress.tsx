@@ -2,24 +2,24 @@ import { CircularProgress, Card, CardBody, CardFooter, Chip } from "@heroui/reac
 
 export default function Progress({subject_code, subject_name, value}) {
   return (
-    <Card className="w-[400px] rounded-2xl border-none bg-black p-2">
+    <Card className="w-full sm:w-[400px] rounded-2xl border-none bg-black p-2">
       <CardBody className="flex flex-row items-center justify-center gap-2">
         <CircularProgress
           classNames={{
-            svg: "w-20 h-20 drop-shadow-md",
+            svg: "w-15 h-15 sm:w-25 sm:h-25 drop-shadow-md",
             indicator: "stroke-white",
             track: "stroke-white/10",
-            value: "text-l font-semibold text-white",
+            value: "text-sm sm:text-xl font-regular sm:font-semibold text-white",
           }}
           showValueLabel={true}
-          strokeWidth={4}
+          strokeWidth={3}
           value={value}
         />
 
         <Chip
           classNames={{
             base: "",
-            content: "text-white/90 font-semibold text-xl",
+            content: "text-white/90 font-semibold text-lg sm:text-xl",
           }}
           variant="bordered"
         >
