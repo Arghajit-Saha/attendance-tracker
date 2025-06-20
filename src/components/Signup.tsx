@@ -43,6 +43,7 @@ function Signup() {
       user_id: userId,
       first_name: firstName,
       last_name: lastName,
+      email: email,
     })
 
     if (profileError) {

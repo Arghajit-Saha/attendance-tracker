@@ -2,20 +2,21 @@ import { useState } from "react"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {supabase} from "@/supabase-client.ts";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, Link} from "react-router-dom";
+import { UserRound } from 'lucide-react';
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const navigate = useNavigate();
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    const {error} = await supabase.auth.signOut();
     navigate("/");
   };
 
   const navLinks = [
-    { name: "Dashboard", href: "" },
-    { name: "Attendance", href: "" },
+    { name: "Dashboard", href: "/dashboard" },
+    { name: "Attendance", href: "/attendance" },
   ]
 
   return (
@@ -24,15 +25,19 @@ const Navbar = () => {
         <div className="text-xl font-bold ">Attendance Tracker</div>
         <div className="hidden md:flex justify-around items-center gap-6">
           {navLinks.map((link) => (
-            <a key={link.name} href={link.href} className="text-gray-700 hover:bg-custom-text font-medium">
+            <Link key={link.name} to={link.href} className="text-gray-700 hover:bg-custom-text font-medium hover:text-black">
               {link.name}
-            </a>
+            </Link>
           ))}
         </div>
-        <div className="hidden md:flex">
+        <div className="hidden md:flex md:items-center md:justify-between space-x-1 ">
+          <Link to="/profile">
+            <UserRound />
+          </Link>
           <Button className="ml-4" onClick={logout}>Logout</Button>
         </div>
-        <div className="md:hidden">
+        <div className="md:hidden flex flex-row items-center justify-between gap-4">
+          <UserRound />
           <button onClick={() => setMobileOpen(!mobileOpen)} className="text-gray-700 focus:outline-none">
             {mobileOpen ? <X size={24} /> : <Menu size={24} />}
           </button>

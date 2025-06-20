@@ -16,8 +16,6 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  console.log(date)
-
   useEffect(() => {
     const fetchUserProfile = async () => {
       const {
@@ -95,7 +93,6 @@ function Dashboard() {
         `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
           date.getDate()
         ).padStart(2, "0")}`;
-      console.log("Only date:", onlyDate);
 
       setDayAttendance(undefined);
 
@@ -111,7 +108,6 @@ function Dashboard() {
         console.error("Error fetching attendance by date:", error.message);
       } else {
         setDayAttendance(data);
-        console.log("Filtered attendance:", data);
       }
     };
     fetchByDate();
@@ -121,7 +117,6 @@ function Dashboard() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mr-2"></div>
-        Loading profile...
       </div>
     );
   }
@@ -176,25 +171,29 @@ function Dashboard() {
         </div>
         <div className="md:w-1/4 flex justify-center md:items-center flex-col">
           <Calendar
+            key={"dashboard"}
             mode="single"
             selected={date}
             onSelect={setDate}
             className="rounded-lg mb-4 bg-inherit"
           />
           {dayAttendance ? (
-            dayAttendance.map((day) => {
-              return (
-                <div className="flex flex-row gap-3 p-2 text-white bg-black w-full item-center justify-between px-5 rounded-lg mb-2">
-                  <h1 className="p-1 font-extrabold ">{day.subject_code}</h1>
-                  <h1
-                    className={`p-1 rounded-sm px-2 w-20 text-center
-      ${day.status === "present" ? "bg-green-800" : "bg-red-700"}`}
-                  >
-                    {day.status === "present" ? "Present" : "Absent"}
-                  </h1>
-                </div>
-              );
-            })
+            dayAttendance.length === 0 ? (
+              <div>No Classes</div>
+              ) :
+              (dayAttendance.map((day) => {
+                return (
+                  <div key={day.id} className="flex flex-row gap-3 p-2 text-white bg-black w-full item-center justify-between px-5 rounded-lg mb-2">
+                    <h1 className="p-1 font-extrabold ">{day.subject_code}</h1>
+                    <h1
+                      className={`p-1 rounded-sm px-2 w-20 text-center
+        ${day.status === "present" ? "bg-green-800" : "bg-red-700"}`}
+                    >
+                      {day.status === "present" ? "Present" : "Absent"}
+                    </h1>
+                  </div>
+                );
+              }))
           ) : (
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
