@@ -80,6 +80,9 @@ function Login() {
               }
             />
             <Button type="submit">Login</Button>
+            <div>
+              <p>Don’t have an account? <a href={"/signup"} className="font-bold underline">Sign up</a></p>
+            </div>
           </form>
         </div>
       </div>

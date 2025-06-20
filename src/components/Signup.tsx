@@ -1,63 +1,102 @@
+import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { type ChangeEvent, useState } from "react"
-import { supabase } from "@/supabase-client.ts"
-import { BackgroundBeams } from "@/components/ui/background-beams.tsx"
+import { supabase } from "@/supabase-client"
+import {useNavigate} from "react-router-dom";
 
 function Signup() {
+  const [step, setStep] = useState(1)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [errorMsg, setErrorMsg] = useState("")
+  const [userId, setUserId] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [subjects, setSubjects] = useState([{ code: "", name: "" }])
+
+  const navigate = useNavigate();
+
+  const handleSignup = async (e) => {
     e.preventDefault()
+    const { data, error } = await supabase.auth.signUp({ email, password })
 
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
+    if (error) return alert(error.message)
+    setUserId(data?.user?.id || "")
+    setStep(2)
+  }
+
+  const handleAddSubject = () => {
+    setSubjects([...subjects, { code: "", name: "" }])
+  }
+
+  const handleSubjectChange = (index, key, value) => {
+    const updated = [...subjects]
+    updated[index][key] = value
+    setSubjects(updated)
+  }
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault()
+    if (!userId) return
+
+    const { error: profileError } = await supabase.from("profile").insert({
+      user_id: userId,
+      first_name: firstName,
+      last_name: lastName,
     })
 
-    if (signUpError) {
-      console.log("Error Signing Up: ", signUpError.message)
-      setErrorMsg(signUpError.message)
-      return
+    if (profileError) {
+      console.error("Profile insert failed:", profileError.message)
     }
 
-    setErrorMsg("")
-    alert("Check your email to confirm your account!")
+    const subjectRows = subjects.map((s) => ({
+      user_id: userId,
+      subject_code: s.code,
+      subject_name: s.name,
+    }))
+
+    await supabase.from("courses").insert(subjectRows)
+
+    navigate("/")
   }
 
   return (
-    <div className="flex flex-row items-center h-screen text-black justify-center">
-      <div className="bg-[#080402] relative flex-col items-center justify-center gap-3.5 h-full w-1/2 text-white p-12 hidden sm:flex">
-        <BackgroundBeams />
-        <div>
-          <h1 className="text-2xl md:text-5xl font-extrabold">Attendance Tracker</h1>
-        </div>
-        <div className="flex flex-col items-start justify-start gap-3.5 flex-wrap">
-          <p className="text-lg text-gray-400">
-            An intuitive and efficient app to manage, monitor, and analyze attendance data for students, teams, or employees. Designed for simplicity and speed, it ensures accurate record-keeping and easy access to attendance insights.
-          </p>
-        </div>
-      </div>
-      <div className="flex flex-col gap-3.5 sm:w-1/2">
-        <div className="flex flex-col items-center justify-center gap-3.5 h-full w-full">
-          <h1 className="text-3xl font-bold mb-2.5">Sign Up</h1>
-          <form className="flex flex-col items-center justify-center gap-3.5 mt-3" onSubmit={handleSubmit}>
-            <Input
-              type="email"
-              placeholder="Email"
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-            />
-            <Button type="submit">Create Account</Button>
-          </form>
-        </div>
-      </div>
+    <div className="flex items-center justify-center min-h-screen p-6">
+      {step === 1 && (
+        <form onSubmit={handleSignup} className="flex flex-col gap-4 w-full max-w-md">
+          <h2 className="text-2xl font-bold">Sign Up</h2>
+          <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <Button type="submit">Continue</Button>
+        </form>
+      )}
+
+      {step === 2 && (
+        <form onSubmit={handleProfileSubmit} className="flex flex-col gap-4 w-full max-w-lg">
+          <h2 className="text-2xl font-bold">Create Your Profile</h2>
+          <Input placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+          <Input placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+
+          <h3 className="text-xl font-semibold mt-4">Subjects</h3>
+          {subjects.map((subject, idx) => (
+            <div key={idx} className="flex gap-2">
+              <Input
+                placeholder="Subject Code"
+                value={subject.code}
+                onChange={(e) => handleSubjectChange(idx, "code", e.target.value)}
+              />
+              <Input
+                placeholder="Subject Name"
+                value={subject.name}
+                onChange={(e) => handleSubjectChange(idx, "name", e.target.value)}
+              />
+            </div>
+          ))}
+
+          <Button type="button" onClick={handleAddSubject}>+ Add Subject</Button>
+          <Button type="submit">Finish</Button>
+        </form>
+      )}
     </div>
   )
 }

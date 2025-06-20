@@ -16,6 +16,8 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  console.log(date)
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       const {
@@ -28,7 +30,7 @@ function Dashboard() {
       const { data: profile, error } = await supabase
         .from("profile")
         .select("*")
-        .eq("id", session.user.id)
+        .eq("user_id", session.user.id)
         .single();
       if (error) {
         console.error("Error fetching profile:", error.message);
@@ -54,7 +56,7 @@ function Dashboard() {
       const { data, error } = await supabase
         .from("courses")
         .select("*")
-        .eq("user_id", userProfile.id);
+        .eq("user_id", userProfile.user_id);
 
       if (error) {
         console.error("Error fetching data:", error.message);
@@ -66,15 +68,15 @@ function Dashboard() {
       }
     };
     handleCourse();
-  }, [userProfile?.id]);
+  }, [userProfile?.user_id]);
 
   useEffect(() => {
     const handleAttendance = async () => {
-      if (!userProfile?.id) return;
+      if (!userProfile?.user_id) return;
       const { data, error } = await supabase
         .from("attendance")
         .select("*")
-        .eq("user_id", userProfile.id);
+        .eq("user_id", userProfile.user_id);
 
       if (!error) {
         setAttendance(data);
@@ -84,20 +86,25 @@ function Dashboard() {
     };
 
     handleAttendance();
-  }, [userProfile?.id]);
+  }, [userProfile?.user_id]);
 
   useEffect(() => {
     const fetchByDate = async () => {
-      const onlyDate = date?.toISOString().split("T")[0];
+      const onlyDate =
+        date &&
+        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+          date.getDate()
+        ).padStart(2, "0")}`;
+      console.log("Only date:", onlyDate);
 
       setDayAttendance(undefined);
 
-      if (!onlyDate || !userProfile?.id) return;
+      if (!onlyDate || !userProfile?.user_id) return;
 
       const { data, error } = await supabase
         .from("attendance")
         .select("*")
-        .eq("user_id", userProfile.id)
+        .eq("user_id", userProfile.user_id)
         .eq("date", onlyDate);
 
       if (error) {
@@ -108,7 +115,7 @@ function Dashboard() {
       }
     };
     fetchByDate();
-  }, [date, userProfile?.id]);
+  }, [date, userProfile?.user_id]);
 
   if (loading) {
     return (
@@ -120,11 +127,11 @@ function Dashboard() {
   }
 
   if (!userProfile) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-red-500">No profile found. Please log in.</div>
-      </div>
-    );
+    const logout = async () => {
+      await supabase.auth.signOut();
+      navigate("/");
+    };
+    logout();
   }
 
   return (
@@ -172,7 +179,7 @@ function Dashboard() {
             mode="single"
             selected={date}
             onSelect={setDate}
-            className="rounded-lg border shadow-lg mb-4"
+            className="rounded-lg mb-4 bg-inherit"
           />
           {dayAttendance ? (
             dayAttendance.map((day) => {

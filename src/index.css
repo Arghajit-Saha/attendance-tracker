@@ -123,3 +123,7 @@
   --color-primary: #f9f4eb;
   /*--color-secondary: #;*/
 }
+
+#root {
+  font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif;
+}
