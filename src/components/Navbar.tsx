@@ -2,12 +2,15 @@ import { useState } from "react"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {supabase} from "@/supabase-client.ts";
+import {useNavigate} from "react-router-dom";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const navigate = useNavigate();
 
   const logout = async () => {
     await supabase.auth.signOut();
+    navigate("/");
   };
 
   const navLinks = [
@@ -16,7 +19,7 @@ const Navbar = () => {
   ]
 
   return (
-    <nav className="sticky">
+    <nav className="sticky mb-2.5">
       <div className=" mx-auto flex justify-between items-center h-16">
         <div className="text-xl font-bold ">Attendance Tracker</div>
         <div className="hidden md:flex justify-around items-center gap-6">
