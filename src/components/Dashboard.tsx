@@ -130,80 +130,83 @@ function Dashboard() {
   }
 
   return (
-    <div className="h-full sm:h-screen w-full relative bg-custom-bg px-10">
+    <div className="min-h-screen w-full bg-custom-bg px-4 sm:px-8 md:px-10 py-4">
       <Navbar />
-      <h1 className="text-3xl font-semibold">Hello, {username}</h1>
-      <div className="flex flex-col md:flex-row gap-3.5 sm:gap-5 items-start">
-        <div className="flex-1 min-h-[300px]">
-          <div className="flex flex-row flex-wrap gap-3.5 mt-3">
-            {course ? (
-              course.map((course) => {
-                const track = attendance?.filter(
-                  (item) => item.subject_code === course.subject_code
-                );
-                const present_days =
-                  track?.filter((item) => item.status === "present")?.length ||
-                  0;
-                const absent_days =
-                  track?.filter((item) => item.status === "absent")?.length ||
-                  0;
-                const total = present_days + absent_days;
-                const percentage =
-                  total > 0 ? Math.floor((present_days / total) * 100) : 0;
-
-                return (
+      <h1 className="text-2xl sm:text-3xl font-semibold mb-4">Hello, {username}</h1>
+      <div className="flex flex-col lg:flex-row gap-6 w-full">
+        <div className="flex-1 flex flex-wrap gap-4">
+          {course ? (
+            course.map((course) => {
+              const track = attendance?.filter(
+                (item) => item.subject_code === course.subject_code
+              );
+              const present_days =
+                track?.filter((item) => item.status === "present")?.length || 0;
+              const absent_days =
+                track?.filter((item) => item.status === "absent")?.length || 0;
+              const total = present_days + absent_days;
+              const percentage = total > 0 ? Math.floor((present_days / total) * 100) : 0;
+              return (
+                <div className="flex-grow sm:flex-shrink-0 sm:basis-[48%] xl:basis-[30%] w-full min-w-[200px]">
                   <Progress
                     key={course.id}
                     subject_code={course.subject_code}
                     subject_name={course.subject_name}
                     value={percentage}
                   />
-                );
-              })
-            ) : (
-              <>
-                <ProgressSkeleton />
-                <ProgressSkeleton />
-                <ProgressSkeleton />
-              </>
-            )}
-          </div>
+                </div>
+              );
+            })
+          ) : (
+            <>
+              <ProgressSkeleton />
+              <ProgressSkeleton />
+              <ProgressSkeleton />
+            </>
+          )}
         </div>
-        <div className="md:w-1/4 flex justify-center md:items-center flex-col">
+        <div className="w-full lg:max-w-sm flex flex-col items-center">
           <Calendar
             key={"dashboard"}
             mode="single"
             selected={date}
             onSelect={setDate}
-            className="rounded-lg mb-4 bg-inherit"
+            className="rounded-lg mb-4 bg-inherit w-full max-w-xs"
           />
-          {dayAttendance ? (
-            dayAttendance.length === 0 ? (
-              <div>No Classes</div>
-              ) :
-              (dayAttendance.map((day) => {
-                return (
-                  <div key={day.id} className="flex flex-row gap-3 p-2 text-white bg-black w-full item-center justify-between px-5 rounded-lg mb-2">
-                    <h1 className="p-1 font-extrabold ">{day.subject_code}</h1>
-                    <h1
-                      className={`p-1 rounded-sm px-2 w-20 text-center
-        ${day.status === "present" ? "bg-green-800" : "bg-red-700"}`}
+          <div className="w-full max-w-xs">
+            {dayAttendance ? (
+              dayAttendance.length === 0 ? (
+                <div className="text-center text-gray-600">No Classes</div>
+              ) : (
+                dayAttendance.map((day) => (
+                  <div
+                    key={day.id}
+                    className="flex items-center justify-between px-4 py-2 mb-2 rounded-lg bg-black text-white"
+                  >
+                    <h1 className="font-bold">{day.subject_code}</h1>
+                    <span
+                      className={`rounded px-3 py-1 text-sm font-medium
+                      ${day.status === "present" ? "bg-green-800" : "bg-red-700"}
+                    `}
                     >
-                      {day.status === "present" ? "Present" : "Absent"}
-                    </h1>
+                    {day.status === "present" ? "Present" : "Absent"}
+                  </span>
                   </div>
-                );
-              }))
-          ) : (
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
-              Loading...
-            </div>
-          )}
+                ))
+              )
+            ) : (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+                <span>Loading...</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
+
+
 }
 
 export default Dashboard;

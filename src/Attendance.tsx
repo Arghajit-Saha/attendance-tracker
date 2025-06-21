@@ -163,7 +163,7 @@ function Attendance() {
     <div className="h-full sm:h-screen w-full relative bg-custom-bg px-10">
       <Navbar />
       <div className="flex flex-col md:flex-row">
-        <div className="w-1/3 h-1/3">
+        <div className="w-full lg:max-w-sm flex flex-col items-center">
           <Calendar
             key={"dashboard"}
             mode="single"
