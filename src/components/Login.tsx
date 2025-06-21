@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { type ChangeEvent, React, useEffect, useState } from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
 import { supabase } from "@/supabase-client.ts";
 import { BackgroundBeams } from "@/components/ui/background-beams.tsx";
 import { useNavigate } from "react-router-dom";
@@ -81,7 +81,12 @@ function Login() {
             />
             <Button type="submit">Login</Button>
             <div>
-              <p>Don’t have an account? <a href={"/signup"} className="font-bold underline">Sign up</a></p>
+              <p>
+                Don’t have an account?{" "}
+                <a href={"/signup"} className="font-bold underline">
+                  Sign up
+                </a>
+              </p>
             </div>
           </form>
         </div>

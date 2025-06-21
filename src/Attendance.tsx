@@ -1,9 +1,9 @@
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar.tsx";
-import {Calendar} from "@/components/ui/Calender.tsx";
-import {supabase} from "@/supabase-client.ts";
-import {useNavigate} from "react-router-dom";
-import {Button} from "@/components/ui/button.tsx";
+import { Calendar } from "@/components/ui/Calender.tsx";
+import { supabase } from "@/supabase-client.ts";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button.tsx";
 
 type UserProfile = {
   id: string;
@@ -14,20 +14,37 @@ type UserProfile = {
   user_id: string;
 };
 
+type Course = {
+  id: number;
+  user_id: string;
+  subject_code: string | null;
+  subject_name: string | null;
+  created_at: string;
+};
+
+type AttendanceRecord = {
+  id: number;
+  user_id: string;
+  subject_code: string;
+  date: string;
+  status: "present" | "absent";
+};
+
 function Attendance() {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [courses, setCourses] = useState<any>();
+  const [courses, setCourses] = useState<Course[] | null>();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [attendance, setAttendance] = useState<any>();
+  const [attendance, setAttendance] = useState<AttendanceRecord[]>();
   const [courseLoading, setCourseLoading] = useState(true);
 
   const onlyDate =
     date &&
-    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-      date.getDate()
-    ).padStart(2, "0")}`;
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(date.getDate()).padStart(2, "0")}`;
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -38,13 +55,13 @@ function Attendance() {
         navigate("/");
         return;
       }
-      const { data: profile, error } = await supabase
+      const { data: profile, error: _error } = await supabase
         .from("profile")
         .select("*")
         .eq("user_id", session.user.id)
         .single();
-      if (error) {
-        console.error("Error fetching profile:", error.message);
+      if (_error) {
+        console.error("Error fetching profile:", _error.message);
         setUserProfile(null);
       } else {
         setUserProfile(profile);
@@ -52,52 +69,56 @@ function Attendance() {
       setLoading(false);
     };
     fetchUserProfile();
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     const fetchCourses = async () => {
-      if(!userProfile || !userProfile.user_id) return;
+      if (!userProfile || !userProfile.user_id) return;
 
-      const {data, error} = await supabase
-        .from('courses')
-        .select('*')
-        .eq('user_id', userProfile.user_id)
-      setCourses(data)
+      const { data } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("user_id", userProfile.user_id);
+      setCourses(data as Course[]);
       setCourseLoading(false);
-    }
+    };
     fetchCourses();
-  }, [userProfile?.user_id])
+  }, [userProfile?.user_id]);
 
   const fetchByDate = async () => {
     setAttendance(undefined);
 
     if (!onlyDate || !userProfile?.user_id) return;
 
-    const { data, error } = await supabase
+    const { data, error: _error } = await supabase
       .from("attendance")
       .select("*")
       .eq("user_id", userProfile.user_id)
       .eq("date", onlyDate);
 
-    if (error) {
-      console.error("Error fetching attendance by date:", error.message);
+    if (_error) {
+      console.error("Error fetching attendance by date:", _error.message);
     } else {
-      setAttendance(data);
+      setAttendance(data as AttendanceRecord[]);
     }
   };
 
   useEffect(() => {
     fetchByDate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date, userProfile?.user_id]);
 
-  const updateAttendance = async (subjectCode: string, status: string) => {
-    if(!onlyDate || !userProfile?.user_id) return;
+  const updateAttendance = async (
+    subjectCode: string | null,
+    status: string
+  ) => {
+    if (!onlyDate || !userProfile?.user_id) return;
 
     const { data: existing } = await supabase
       .from("attendance")
       .select("*")
       .eq("subject_code", subjectCode)
-      .eq("date", onlyDate)
+      .eq("date", onlyDate);
 
     if (status === "") {
       if (existing && existing.length > 0) {
@@ -107,30 +128,28 @@ function Attendance() {
           .eq("subject_code", subjectCode)
           .eq("date", onlyDate)
           .eq("user_id", userProfile.user_id);
-        if (deleteError) console.error("Error deleting attendance:", deleteError.message);
+        if (deleteError)
+          console.error("Error deleting attendance:", deleteError.message);
       }
-    } else if(existing && existing.length > 0) {
-      const {error} = await supabase
+    } else if (existing && existing.length > 0) {
+      const { error: updateError } = await supabase
         .from("attendance")
         .update({ status })
         .eq("subject_code", subjectCode)
         .eq("date", onlyDate)
         .eq("user_id", userProfile.user_id);
-      if (error) console.error("Error while updating: ", error)
-    }
-    else {
-      const { error } = await supabase
-        .from("attendance")
-        .insert({
-          subject_code: subjectCode,
-          date: onlyDate,
-          status: status,
-          user_id: userProfile.user_id,
-        });
-      if(error) console.error("Error while inserting: ", error)
+      if (updateError) console.error("Error while updating: ", updateError);
+    } else {
+      const { error: insertError } = await supabase.from("attendance").insert({
+        subject_code: subjectCode,
+        date: onlyDate,
+        status: status,
+        user_id: userProfile.user_id,
+      });
+      if (insertError) console.error("Error while inserting: ", insertError);
     }
     await fetchByDate();
-  }
+  };
 
   if (loading || courseLoading) {
     return (
@@ -156,15 +175,17 @@ function Attendance() {
         <div className="grow">
           <div className="space-y-4">
             {courses && courses.length > 0 ? (
-              courses.map((course) => {
+              courses.map((course: Course) => {
                 const subjectCode = course.subject_code;
                 const subjectName = course.subject_name;
-                const track = attendance?.find((item) => item.subject_code === subjectCode);
+                const track = attendance?.find(
+                  (item: AttendanceRecord) => item.subject_code === subjectCode
+                );
                 const status = track?.status ?? "none";
 
                 return (
                   <div
-                    key={subjectCode}
+                    key={subjectCode ?? ""}
                     className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-black  border-2 text-white"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -211,11 +232,10 @@ function Attendance() {
               <div className="text-gray-500 italic">No Courses Found</div>
             )}
           </div>
-
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default Attendance;

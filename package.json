@@ -12,7 +12,7 @@
   "dependencies": {
     "@heroui/navbar": "^2.2.19",
     "@heroui/progress": "^2.2.17",
-    "@heroui/react": "^2.7.10",
+    "@heroui/react": "^2.7.11",
     "@heroui/spinner": "^2.2.18",
     "@heroui/system": "^2.4.17",
     "@heroui/theme": "^2.4.17",
