@@ -43,7 +43,9 @@ const Navbar = () => {
           </Button>
         </div>
         <div className="md:hidden flex flex-row items-center justify-between gap-4">
-          <UserRound />
+          <Link to="/profile">
+            <UserRound />
+          </Link>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="text-gray-700 focus:outline-none"
