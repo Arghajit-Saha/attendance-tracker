@@ -130,7 +130,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-custom-bg px-4 sm:px-8 md:px-10 py-4">
+    <div className="min-h-screen w-full bg-custom-bg px-4 sm:px-8 md:px-10">
       <Navbar />
       <h1 className="text-2xl sm:text-3xl font-semibold mb-4">Hello, {username}</h1>
       <div className="flex flex-col lg:flex-row gap-6 w-full">

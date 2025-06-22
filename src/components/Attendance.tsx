@@ -4,6 +4,7 @@ import { Calendar } from "@/components/ui/Calender.tsx";
 import { supabase } from "@/supabase-client.ts";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button.tsx";
+import { Loader2 } from "lucide-react";
 
 type UserProfile = {
   id: string;
@@ -36,6 +37,7 @@ function Attendance() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [subjectLoading, setSubjectLoading] = useState<{ code: string | null; status: string | null} | null>(null);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>();
   const [courseLoading, setCourseLoading] = useState(true);
 
@@ -105,13 +107,13 @@ function Attendance() {
 
   useEffect(() => {
     fetchByDate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date, userProfile?.user_id]);
 
   const updateAttendance = async (
     subjectCode: string | null,
     status: string
   ) => {
+    setSubjectLoading({code: subjectCode, status: status});
     if (!onlyDate || !userProfile?.user_id) return;
 
     const { data: existing } = await supabase
@@ -149,6 +151,7 @@ function Attendance() {
       if (insertError) console.error("Error while inserting: ", insertError);
     }
     await fetchByDate();
+    setSubjectLoading(null);
   };
 
   if (loading || courseLoading) {
@@ -206,25 +209,52 @@ function Attendance() {
                       <Button
                         variant="default"
                         onClick={() => updateAttendance(subjectCode, "present")}
+                        disabled={subjectLoading?.code === subjectCode}
                         className="bg-green-700 hover:bg-green-900"
                       >
-                        Mark Present
+                        {subjectLoading?.code === subjectCode && subjectLoading?.status === "present" ? (
+                          <>
+                            <Loader2 className="animate-spin h-4 w-4 mr-1" />
+                            <span>Mark Present</span>
+                          </>
+                        ) : (
+                          <span>Mark Present</span>
+                        )}
                       </Button>
+
                       <Button
                         variant="default"
                         onClick={() => updateAttendance(subjectCode, "absent")}
+                        disabled={subjectLoading?.code === subjectCode}
                         className="bg-red-700 hover:bg-red-800"
                       >
-                        Mark Absent
+                        {subjectLoading?.code === subjectCode && subjectLoading?.status === "absent" ? (
+                          <>
+                            <Loader2 className="animate-spin h-4 w-4 mr-1" />
+                            <span>Mark Absent</span>
+                          </>
+                        ) : (
+                          <span>Mark Absent</span>
+                        )}
                       </Button>
+
                       <Button
                         variant="default"
                         onClick={() => updateAttendance(subjectCode, "")}
+                        disabled={subjectLoading?.code === subjectCode}
                         className="bg-yellow-600 hover:bg-yellow-700"
                       >
-                        Clear
+                        {subjectLoading?.code === subjectCode && subjectLoading?.status === "" ? (
+                          <>
+                            <Loader2 className="animate-spin h-4 w-4 mr-1" />
+                            <span>Clear</span>
+                          </>
+                        ) : (
+                          <span>Clear</span>
+                        )}
                       </Button>
                     </div>
+
                   </div>
                 );
               })

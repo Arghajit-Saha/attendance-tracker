@@ -3,8 +3,8 @@ import Dashboard from "./components/Dashboard";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Wrapper from "@/components/Wrapper.tsx";
 import Signup from "@/components/Signup.tsx";
-import Attendance from "@/Attendance.tsx";
-import Profile from "@/Profile.tsx";
+import Attendance from "@/components/Attendance.tsx";
+import Profile from "@/components/Profile";
 
 function App() {
   return (
@@ -34,13 +34,17 @@ function App() {
           <Route
             path="/attendance"
             element={
-              <Attendance />
+              <Wrapper>
+                <Attendance />
+              </Wrapper>
             }
           />
           <Route
             path="/profile"
             element={
-              <Profile />
+              <Wrapper>
+                <Profile />
+              </Wrapper>
             }
           />
         </Routes>
