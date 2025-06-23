@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import Navbar from "@/components/Navbar.tsx";
-import { Input } from "@/components/ui/input.tsx";
+import Navbar from "@/pages/Navbar.tsx";
+import { Input } from "@/components/input.tsx";
 import { supabase } from "@/supabase-client.ts";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button.tsx";
+import { Button } from "@/components/button.tsx";
 import { Plus, Pencil, Trash2, Loader2, Save, Check } from "lucide-react";
 
 function Profile() {
@@ -18,6 +18,8 @@ function Profile() {
   const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
   const [editCode, setEditCode] = useState("");
   const [editName, setEditName] = useState("");
+  const [addCourseLoading, setAddCourseLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,6 +71,7 @@ function Profile() {
 
   const handleSubmit = async () => {
     if (!userProfile?.user_id) return;
+    setSaveLoading(true);
     await supabase
       .from("profile")
       .update({
@@ -76,10 +79,13 @@ function Profile() {
         last_name: lastName,
       })
       .eq("user_id", userProfile.user_id);
+    navigate("/dashboard");
+    setSaveLoading(false);
   };
 
   const handleAddCourse = async () => {
     if (!subjectCode || !subjectName || !userProfile?.user_id) return;
+    setAddCourseLoading(true);
     const { data, error } = await supabase
       .from("courses")
       .insert([
@@ -102,6 +108,7 @@ function Profile() {
       setCourse(updated);
       setSubjectCode("");
       setSubjectName("");
+      setAddCourseLoading(false);
     }
   };
 
@@ -134,6 +141,29 @@ function Profile() {
       setEditingCourseId(null);
     }
   };
+
+  const handleDeleteCourse = async (id: number, code: string, user_id: string) => {
+    const { error: attendanceError } = await supabase
+      .from("attendance")
+      .delete()
+      .eq("subject_code", code)
+      .eq("user_id", user_id);
+    if (attendanceError) {
+      console.error("Error deleting attendance:", attendanceError.message);
+      return;
+    }
+    const { error: courseError } = await supabase
+      .from("courses")
+      .delete()
+      .eq("id", id);
+    if (courseError) {
+      console.error("Error deleting course:", courseError.message);
+      return;
+    }
+    const updated = course.filter((item) => item.id !== id);
+    setCourse(updated);
+  };
+
 
   if (loading) {
     return (
@@ -176,10 +206,17 @@ function Profile() {
               value={subjectName}
               onChange={(e) => setSubjectName(e.target.value)}
             />
-            <Button onClick={handleAddCourse}>
-              <Plus />
-              Add Course
-            </Button>
+            {addCourseLoading ? (
+              <Button onClick={handleAddCourse} className="disabled">
+                <Loader2 className="animate-spin h-8 w-8 text-white/90" />
+                Add Course
+              </Button>
+            ) : (
+              <Button onClick={handleAddCourse}>
+                <Plus />
+                Add Course
+              </Button>
+            )}
           </div>
           {courseLoading ? (
             <div className="flex justify-center items-center min-h-[200px]">
@@ -203,11 +240,11 @@ function Profile() {
                 </div>
                 <div className="flex flex-row gap-2">
                   {editingCourseId === c.id ? (
-                    <Button onClick={() => handleSaveCourse(c.id)}><Check /></Button>
+                    <Button className="hover:bg-gray-300 hover:text-black/90 text-white/90" onClick={() => handleSaveCourse(c.id)}><Check /></Button>
                   ) : (
-                    <Button onClick={() => handleEditClick(c)}><Pencil /></Button>
+                    <Button className="hover:bg-gray-300 hover:text-black/90 text-white/90" onClick={() => handleEditClick(c)}><Pencil /></Button>
                   )}
-                  <Button className="hover:bg-red-200 text-red-500"><Trash2 /></Button>
+                  <Button className="hover:bg-red-200 text-red-500" onClick={() => handleDeleteCourse(c.id, c.subject_code, c.user_id)}><Trash2 /></Button>
                 </div>
               </div>
             ))
@@ -215,10 +252,17 @@ function Profile() {
             <div>No Courses :(</div>
           )}
         </div>
-        <Button className="mt-4 bg-black/90" onClick={handleSubmit}>
-          <Save />
-          Save
-        </Button>
+        {saveLoading ? (
+          <Button className="mt-4 bg-black/90 disabled" onClick={handleSubmit}>
+            <Loader2 className="animate-spin h-8 w-8 text-white/90" />
+            Save
+          </Button>
+        ) : (
+          <Button className="mt-4 bg-black/90" onClick={handleSubmit}>
+            <Save />
+            Save
+          </Button>
+        )}
       </div>
     </div>
   );

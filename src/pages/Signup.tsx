@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/supabase-client";
+import { Input } from "@/components/input.tsx";
+import { Button } from "@/components/button.tsx";
+import { supabase } from "@/supabase-client.ts";
 import { useNavigate } from "react-router-dom";
 
 function Signup() {
@@ -39,6 +39,19 @@ function Signup() {
     e.preventDefault();
     if (!userId) return;
 
+    if (!firstName.trim() || !lastName.trim()) {
+      alert("First Name and Last Name cannot be empty.");
+      return;
+    }
+
+    const validSubjects = subjects.filter(
+      (s) => s.code.trim() !== "" && s.name.trim() !== ""
+    );
+    if (validSubjects.length === 0) {
+      alert("Please add at least one valid subject.");
+      return;
+    }
+
     const { error: profileError } = await supabase.from("profile").insert({
       user_id: userId,
       first_name: firstName,
@@ -48,16 +61,23 @@ function Signup() {
 
     if (profileError) {
       console.error("Profile insert failed:", profileError.message);
+      alert("There was a problem creating your profile.");
+      return;
     }
 
-    const subjectRows = subjects.map((s) => ({
+    const subjectRows = validSubjects.map((s) => ({
       user_id: userId,
-      subject_code: s.code,
-      subject_name: s.name,
+      subject_code: s.code.trim(),
+      subject_name: s.name.trim(),
     }));
 
-    await supabase.from("courses").insert(subjectRows);
+    const { error: coursesError } = await supabase.from("courses").insert(subjectRows);
 
+    if (coursesError) {
+      console.error("Courses insert failed:", coursesError.message);
+      alert("There was a problem adding your subjects.");
+      return;
+    }
     navigate("/");
   };
 

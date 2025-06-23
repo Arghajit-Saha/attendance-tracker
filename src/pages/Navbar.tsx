@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/button.tsx";
 import { supabase } from "@/supabase-client.ts";
 import { useNavigate, Link } from "react-router-dom";
 import { UserRound } from "lucide-react";
@@ -10,7 +10,12 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error during logout:", error.message);
+      return;
+    }
+    setMobileOpen(false);
     navigate("/");
   };
 
@@ -22,7 +27,7 @@ const Navbar = () => {
   return (
     <nav className="sticky mb-2.5">
       <div className=" mx-auto flex justify-between items-center h-16">
-        <div className="text-xl font-bold ">Attendance Tracker</div>
+        <div className="text-xl font-bold">Attendance Tracker</div>
         <div className="hidden md:flex justify-around items-center gap-6">
           {navLinks.map((link) => (
             <Link
@@ -35,6 +40,7 @@ const Navbar = () => {
           ))}
         </div>
         <div className="hidden md:flex md:items-center md:justify-between space-x-1 ">
+
           <Link to="/profile">
             <UserRound />
           </Link>
@@ -58,13 +64,13 @@ const Navbar = () => {
         <div className="md:hidden shadow-md border-t">
           <div className="flex flex-col space-y-4 px-4 py-4">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
+                to={link.href}
                 className="text-gray-700 hover:text-blue-600 font-medium"
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
             <Button onClick={logout}>Logout</Button>
           </div>

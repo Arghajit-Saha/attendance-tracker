@@ -1,10 +1,10 @@
-import Login from "./components/Login";
-import Dashboard from "./components/Dashboard";
+import Login from "./pages/Login.tsx";
+import Dashboard from "./pages/Dashboard.tsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Wrapper from "@/components/Wrapper.tsx";
-import Signup from "@/components/Signup.tsx";
-import Attendance from "@/components/Attendance.tsx";
-import Profile from "@/components/Profile";
+import Signup from "@/pages/Signup.tsx";
+import Attendance from "@/pages/Attendance.tsx";
+import Profile from "@/pages/Profile.tsx";
 
 function App() {
   return (

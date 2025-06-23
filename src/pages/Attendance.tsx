@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import Navbar from "@/components/Navbar.tsx";
-import { Calendar } from "@/components/ui/Calender.tsx";
+import Navbar from "@/pages/Navbar.tsx";
+import { Calendar } from "@/components/Calender.tsx";
 import { supabase } from "@/supabase-client.ts";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button.tsx";
+import { Button } from "@/components/button.tsx";
 import { Loader2 } from "lucide-react";
 
 type UserProfile = {
@@ -157,7 +157,7 @@ function Attendance() {
   if (loading || courseLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mr-2"></div>
+        <Loader2 className="animate-spin h-8 w-8 text-black" />
       </div>
     );
   }

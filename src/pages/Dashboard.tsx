@@ -1,10 +1,11 @@
-import Navbar from "./Navbar";
-import Progress from "@/components/ui/Progress.tsx";
+import Navbar from "./Navbar.tsx";
+import Progress from "@/components/Progress.tsx";
 import { useEffect, useState } from "react";
 import { supabase } from "@/supabase-client.ts";
-import { Calendar } from "@/components/ui/Calender.tsx";
-import ProgressSkeleton from "@/components/ui/ProgressSkeleton.tsx";
+import { Calendar } from "@/components/Calender.tsx";
+import ProgressSkeleton from "@/components/ProgressSkeleton.tsx";
 import { useNavigate } from "react-router-dom";
+import {Loader2} from "lucide-react";
 
 function Dashboard() {
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -116,7 +117,7 @@ function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mr-2"></div>
+        <Loader2 className="animate-spin h-8 w-8 text-black" />
       </div>
     );
   }
@@ -133,8 +134,8 @@ function Dashboard() {
     <div className="min-h-screen w-full bg-custom-bg px-4 sm:px-8 md:px-10">
       <Navbar />
       <h1 className="text-2xl sm:text-3xl font-semibold mb-4">Hello, {username}</h1>
-      <div className="flex flex-col lg:flex-row gap-6 w-full">
-        <div className="flex-1 flex flex-wrap gap-4">
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 w-full">
           {course ? (
             course.map((course) => {
               const track = attendance?.filter(
@@ -147,9 +148,8 @@ function Dashboard() {
               const total = present_days + absent_days;
               const percentage = total > 0 ? Math.floor((present_days / total) * 100) : 0;
               return (
-                <div className="flex-grow sm:flex-shrink-0 sm:basis-[48%] xl:basis-[30%] w-full min-w-[200px]">
+                <div key={course.id} className="min-w-[200px]">
                   <Progress
-                    key={course.id}
                     subject_code={course.subject_code}
                     subject_name={course.subject_name}
                     value={percentage}
@@ -196,8 +196,7 @@ function Dashboard() {
               )
             ) : (
               <div className="flex items-center justify-center py-4">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
-                <span>Loading...</span>
+                <Loader2 className="animate-spin h-8 w-8 text-black" />
               </div>
             )}
           </div>
@@ -205,8 +204,6 @@ function Dashboard() {
       </div>
     </div>
   );
-
-
 }
 
 export default Dashboard;

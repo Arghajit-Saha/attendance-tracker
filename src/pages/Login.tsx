@@ -1,8 +1,8 @@
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/input.tsx";
+import { Button } from "@/components/button.tsx";
 import { type ChangeEvent, useEffect, useState } from "react";
 import { supabase } from "@/supabase-client.ts";
-import { BackgroundBeams } from "@/components/ui/background-beams.tsx";
+import { BackgroundBeams } from "@/components/background-beams.tsx";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
