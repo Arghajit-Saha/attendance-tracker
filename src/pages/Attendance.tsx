@@ -4,7 +4,7 @@ import { Calendar } from "@/components/Calender.tsx";
 import { supabase } from "@/supabase-client.ts";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/button.tsx";
-import { Loader2 } from "lucide-react";
+import { Loader2, BookOpen, Calendar as CalendarIcon } from "lucide-react";
 
 type UserProfile = {
   id: string;
@@ -163,104 +163,159 @@ function Attendance() {
   }
 
   return (
-    <div className="h-full sm:h-screen w-full relative bg-custom-bg px-10">
+    <div className="min-h-screen w-full bg-custom-bg px-4 sm:px-8 md:px-10">
       <Navbar />
-      <div className="flex flex-col md:flex-row">
-        <div className="w-full lg:max-w-sm flex flex-col items-center">
-          <Calendar
-            key={"dashboard"}
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            className="rounded-lg mb-4 bg-inherit"
-          />
+      <div className="max-w-full mx-auto flex flex-col sm:flex-row justify-between gap-5">
+        <div className="">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-2">Mark Attendance</h1>
+          <p className="text-gray-600">Select a date and mark attendance for your courses</p>
+          <div className="w-full lg:w-120 mt-4">
+            <div className="bg-white/90 rounded-lg shadow-sm border p-6 sticky top-6">
+              <div className="flex items-center gap-2 mb-4 pl-2.5">
+                <CalendarIcon className="h-5 w-5 text-gray-600" />
+                <h2 className="text-xl font-medium text-gray-800">Select Date</h2>
+              </div>
+              <Calendar
+                key={"attendance"}
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                className="rounded-lg bg-inherit w-full"
+              />
+              {date && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="text-sm text-gray-600">Selected Date</div>
+                  <div className="font-medium text-gray-800">
+                    {date.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="grow">
-          <div className="space-y-4">
-            {courses && courses.length > 0 ? (
-              courses.map((course: Course) => {
-                const subjectCode = course.subject_code;
-                const subjectName = course.subject_name;
-                const track = attendance?.find(
-                  (item: AttendanceRecord) => item.subject_code === subjectCode
-                );
-                const status = track?.status ?? "none";
+        <div className="flex flex-col lg:flex-row gap-8 grow">
+          <div className="flex-1">
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <BookOpen className="h-5 w-5 text-gray-600" />
+                <h2 className="text-xl font-medium text-gray-800">Courses</h2>
+              </div>
+              {date && (
+                <p className="text-sm text-gray-600">
+                  Mark attendance for {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </p>
+              )}
+            </div>
+            <div className="space-y-4">
+              {courses && courses.length > 0 ? (
+                courses.map((course: Course) => {
+                  const subjectCode = course.subject_code;
+                  const subjectName = course.subject_name;
+                  const track = attendance?.find(
+                    (item: AttendanceRecord) => item.subject_code === subjectCode
+                  );
+                  const status = track?.status ?? "none";
+                  const isLoading = subjectLoading?.code === subjectCode;
 
-                return (
-                  <div
-                    key={subjectCode ?? ""}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-black  border-2 text-white"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                      <div className="text-lg font-semibold">{subjectCode}</div>
-                      <div className="text-sm text-gray-200">{subjectName}</div>
-                      <div className="px-3 py-1 rounded-full text-sm font-medium border text-black border-gray-300 bg-gray-100">
-                        Status:{" "}
-                        {status === "present" ? (
-                          <span className="text-green-800 ml-1">Present</span>
-                        ) : status === "absent" ? (
-                          <span className="text-red-700 ml-1">Absent</span>
-                        ) : (
-                          <span className="text-gray-500 ml-1">None</span>
-                        )}
+                  return (
+                    <div
+                      key={subjectCode ?? ""}
+                      className="bg-black rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        {/* Course Info */}
+                        <div className="flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                            <div className="text-lg font-semibold text-white">
+                              {subjectCode}
+                            </div>
+                            <div className="text-gray-200 text-sm">
+                              {subjectName}
+                            </div>
+                          </div>
+                          <div className="inline-flex items-center">
+                            <span className="text-sm text-gray-100 mr-2">Status:</span>
+                            <span
+                              className={`px-3 py-1 rounded-full text-sm font-medium border
+                                ${status === "present"
+                                ? "bg-green-50 text-green-700 border-green-200"
+                                : status === "absent"
+                                  ? "bg-red-50 text-red-700 border-red-200"
+                                  : "bg-gray-50 text-gray-600 border-gray-200"}
+                              `}
+                            >
+                              {status === "present" ? "Present" : status === "absent" ? "Absent" : "Not Marked"}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant="default"
+                            onClick={() => updateAttendance(subjectCode, "present")}
+                            disabled={isLoading}
+                            className={`bg-green-700 hover:bg-green-800 text-white min-w-[120px] 
+                              ${status === "present" ? "ring-2 ring-green-600" : ""}`}
+                          >
+                            {isLoading && subjectLoading?.status === "present" ? (
+                              <>
+                                <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                                Marking...
+                              </>
+                            ) : (
+                              "Mark Present"
+                            )}
+                          </Button>
+                          <Button
+                            variant="default"
+                            onClick={() => updateAttendance(subjectCode, "absent")}
+                            disabled={isLoading}
+                            className={`bg-red-700 hover:bg-red-800 text-white min-w-[120px]
+                              ${status === "absent" ? "ring-2 ring-red-600" : ""}`}
+                          >
+                            {isLoading && subjectLoading?.status === "absent" ? (
+                              <>
+                                <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                                Marking...
+                              </>
+                            ) : (
+                              "Mark Absent"
+                            )}
+                          </Button>
+                          {status !== "none" && (
+                            <Button
+                              variant="outline"
+                              onClick={() => updateAttendance(subjectCode, "")}
+                              disabled={isLoading}
+                              className="border-gray-300 text-gray-700 hover:bg-gray-50 min-w-[80px]"
+                            >
+                              {isLoading && subjectLoading?.status === "" ? (
+                                <>
+                                  <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                                  Clearing...
+                                </>
+                              ) : (
+                                "Clear"
+                              )}
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-3 sm:mt-0">
-                      <Button
-                        variant="default"
-                        onClick={() => updateAttendance(subjectCode, "present")}
-                        disabled={subjectLoading?.code === subjectCode}
-                        className="bg-green-700 hover:bg-green-900"
-                      >
-                        {subjectLoading?.code === subjectCode && subjectLoading?.status === "present" ? (
-                          <>
-                            <Loader2 className="animate-spin h-4 w-4 mr-1" />
-                            <span>Mark Present</span>
-                          </>
-                        ) : (
-                          <span>Mark Present</span>
-                        )}
-                      </Button>
-
-                      <Button
-                        variant="default"
-                        onClick={() => updateAttendance(subjectCode, "absent")}
-                        disabled={subjectLoading?.code === subjectCode}
-                        className="bg-red-700 hover:bg-red-800"
-                      >
-                        {subjectLoading?.code === subjectCode && subjectLoading?.status === "absent" ? (
-                          <>
-                            <Loader2 className="animate-spin h-4 w-4 mr-1" />
-                            <span>Mark Absent</span>
-                          </>
-                        ) : (
-                          <span>Mark Absent</span>
-                        )}
-                      </Button>
-
-                      <Button
-                        variant="default"
-                        onClick={() => updateAttendance(subjectCode, "")}
-                        disabled={subjectLoading?.code === subjectCode}
-                        className="bg-yellow-600 hover:bg-yellow-700"
-                      >
-                        {subjectLoading?.code === subjectCode && subjectLoading?.status === "" ? (
-                          <>
-                            <Loader2 className="animate-spin h-4 w-4 mr-1" />
-                            <span>Clear</span>
-                          </>
-                        ) : (
-                          <span>Clear</span>
-                        )}
-                      </Button>
-                    </div>
-
-                  </div>
-                );
-              })
-            ) : (
-              <div className="text-gray-500 italic">No Courses Found</div>
-            )}
+                  );
+                })
+              ) : (
+                <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
+                  <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <div className="text-gray-500 text-lg mb-2">No courses found</div>
+                  <div className="text-gray-400 text-sm">Add some courses to start marking attendance</div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
